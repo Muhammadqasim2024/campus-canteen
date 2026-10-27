@@ -1,0 +1,1449 @@
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
+import { 
+  ShoppingBag, 
+  Heart, 
+  Search, 
+  Filter, 
+  ArrowLeft, 
+  Plus, 
+  Minus, 
+  Trash2, 
+  Clock, 
+  Flame, 
+  CheckCircle, 
+  AlertCircle, 
+  Sparkles, 
+  ChevronRight, 
+  Utensils, 
+  Coffee, 
+  Pizza, 
+  IceCream, 
+  Info, 
+  Github, 
+  FileText, 
+  X,
+  Share2
+} from 'lucide-react';
+
+// ==========================================
+// MOCK DATA (Simulating menu.json content)
+// ==========================================
+const MOCK_MENU_DATA = [
+  {
+    id: 'm1',
+    name: 'Campus Special Deluxe Burger',
+    category: 'Main Meals',
+    price: 6.99,
+    rating: 4.8,
+    prepTime: '12-15 mins',
+    calories: 620,
+    dietary: 'Non-Veg',
+    spiceLevel: 2,
+    description: 'Juicy grilled patty topped with aged cheddar, caramelized onions, crisp lettuce, tomato, and secret canteen relish in a toasted brioche bun.',
+    ingredients: ['Beef Patty', 'Brioche Bun', 'Cheddar Cheese', 'Caramelized Onions', 'Secret Sauce'],
+    popular: true,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm2',
+    name: 'Avocado & Loaded Paneer Bowl',
+    category: 'Main Meals',
+    price: 7.49,
+    rating: 4.7,
+    prepTime: '10 mins',
+    calories: 480,
+    dietary: 'Veg',
+    spiceLevel: 1,
+    description: 'Grilled spiced cottage cheese, fresh avocado slices, quinoa, black beans, roasted corn, and chipotle lime dressing.',
+    ingredients: ['Paneer', 'Avocado', 'Quinoa', 'Roasted Corn', 'Chipotle Lime Salsa'],
+    popular: true,
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm3',
+    name: 'Crispy Falafel Wrap',
+    category: 'Snacks & Street Food',
+    price: 5.25,
+    rating: 4.5,
+    prepTime: '8 mins',
+    calories: 390,
+    dietary: 'Vegan',
+    spiceLevel: 1,
+    description: 'Golden chickpeas falafels wrapped in warm pita with tahini garlic sauce, fresh cucumbers, pickled turnip, and tomatoes.',
+    ingredients: ['Chickpea Falafel', 'Whole Wheat Pita', 'Tahini Dressing', 'Pickles', 'Parsley'],
+    popular: false,
+    image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm4',
+    name: 'Iced Caramel Macchiato',
+    category: 'Beverages',
+    price: 3.80,
+    rating: 4.9,
+    prepTime: '3-5 mins',
+    calories: 210,
+    dietary: 'Veg',
+    spiceLevel: 0,
+    description: 'Freshly pulled espresso layered with cold whole milk, vanilla syrup, and finished with a rich drizzle of sweet caramel.',
+    ingredients: ['Espresso', 'Cold Milk', 'Vanilla Syrup', 'Caramel Drizzle', 'Ice'],
+    popular: true,
+    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm5',
+    name: 'Sunrise Bacon & Egg Bagel',
+    category: 'Breakfast',
+    price: 4.99,
+    rating: 4.6,
+    prepTime: '7 mins',
+    calories: 510,
+    dietary: 'Non-Veg',
+    spiceLevel: 0,
+    description: 'Crispy bacon, fried egg, melted Swiss cheese, and avocado spread on a freshly baked sesame bagel.',
+    ingredients: ['Crispy Bacon', 'Egg', 'Swiss Cheese', 'Sesame Bagel', 'Avocado Spread'],
+    popular: false,
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm6',
+    name: 'Triple Chocolate Fudge Brownie',
+    category: 'Desserts',
+    price: 3.25,
+    rating: 4.9,
+    prepTime: 'Direct Serve',
+    calories: 380,
+    dietary: 'Veg',
+    spiceLevel: 0,
+    description: 'Rich, gooey dark chocolate brownie baked daily in the campus bakery, served with a dusting of cocoa powder.',
+    ingredients: ['Dark Chocolate', 'Butter', 'Cocoa', 'Flour', 'Walnuts'],
+    popular: true,
+    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm7',
+    name: 'Spicy Schezwan Noodles',
+    category: 'Main Meals',
+    price: 6.25,
+    rating: 4.4,
+    prepTime: '10 mins',
+    calories: 520,
+    dietary: 'Vegan',
+    spiceLevel: 3,
+    description: 'Wok-tossed stir-fry noodles with crunchy spring vegetables in a fiery garlic chili Schezwan sauce.',
+    ingredients: ['Noodles', 'Bell Peppers', 'Schezwan Sauce', 'Spring Onion', 'Garlic'],
+    popular: false,
+    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'm8',
+    name: 'Berry Blast Smoothie',
+    category: 'Beverages',
+    price: 4.10,
+    rating: 4.7,
+    prepTime: '4 mins',
+    calories: 190,
+    dietary: 'Vegan',
+    spiceLevel: 0,
+    description: 'Refreshing blend of wild blueberries, strawberries, banana, and chilled almond milk with a splash of honey.',
+    ingredients: ['Blueberries', 'Strawberries', 'Banana', 'Almond Milk', 'Chia Seeds'],
+    popular: false,
+    image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80'
+  }
+];
+
+// Customizations options mapping
+const CUSTOMIZATION_OPTIONS = {
+  spiceLevels: ['Mild', 'Medium', 'Extra Hot'],
+  addOns: [
+    { name: 'Extra Cheese', price: 0.99 },
+    { name: 'Avocado Slice', price: 1.25 },
+    { name: 'Double Patty/Protein', price: 2.50 },
+    { name: 'Extra Dip / Sauce', price: 0.50 }
+  ]
+};
+
+// ==========================================
+// CONTEXT PROVIDERS (Cart & Favorites)
+// ==========================================
+const CartContext = createContext();
+const FavoritesContext = createContext();
+
+export const CartProvider = ({ children }) => {
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (item, quantity = 1, options = {}) => {
+    setCart((prev) => {
+      // Find if exact item with same options exists
+      const existingIndex = prev.findIndex(
+        (ci) =>
+          ci.id === item.id &&
+          ci.spiceChoice === options.spiceChoice &&
+          JSON.stringify(ci.selectedAddOns?.sort()) === JSON.stringify(options.selectedAddOns?.sort())
+      );
+
+      if (existingIndex > -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += quantity;
+        return updated;
+      } else {
+        const itemTotalPrice = item.price + (options.extraCost || 0);
+        return [
+          ...prev,
+          {
+            ...item,
+            cartItemId: `${item.id}-${Date.now()}`,
+            quantity,
+            unitPrice: itemTotalPrice,
+            spiceChoice: options.spiceChoice || 'Default',
+            selectedAddOns: options.selectedAddOns || [],
+            notes: options.notes || ''
+          }
+        ];
+      }
+    });
+  };
+
+  const removeFromCart = (cartItemId) => {
+    setCart((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
+  };
+
+  const updateQuantity = (cartItemId, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.cartItemId === cartItemId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
+
+  const clearCart = () => setCart([]);
+
+  const totalItemsCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0), [cart]);
+
+  return (
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        totalItemsCount,
+        subtotal
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+export const FavoritesProvider = ({ children }) => {
+  const [favorites, setFavorites] = useState(['m1', 'm4']);
+
+  const toggleFavorite = (id) => {
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]));
+  };
+
+  return (
+    <FavoritesContext.Provider value={{ favorites, toggleFavorite }}>
+      {children}
+    </FavoritesContext.Provider>
+  );
+};
+
+const useCart = () => useContext(CartContext);
+const useFavorites = () => useContextFavorites();
+const useContextFavorites = () => useContext(FavoritesContext);
+
+// ==========================================
+// MAIN APP COMPONENT & SIMPLE ROUTER
+// ==========================================
+export default function App() {
+  return (
+    <CartProvider>
+      <FavoritesProvider>
+        <MainContent />
+      </FavoritesProvider>
+    </CartProvider>
+  );
+}
+
+function MainContent() {
+  // Simple Router State: 'menu' | 'details' | 'cart'
+  const [currentScreen, setCurrentScreen] = useState('menu');
+  const [selectedItemId, setSelectedItemId] = useState(null);
+
+  // Async data fetching state for menu.json simulation
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Submission info modal visibility
+  const [showDocsModal, setShowDocsModal] = useState(false);
+
+  // Simulate Fetching menu.json
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Simulating network delay for realistic async loading demo
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        
+        // In actual standard deployment, this executes:
+        // const response = await fetch('/menu.json');
+        // if (!response.ok) throw new Error('Failed to load menu data');
+        // const data = await response.json();
+        
+        setMenuItems(MOCK_MENU_DATA);
+      } catch (err) {
+        setError('Could not load canteen menu. Please check network connection.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenu();
+  }, []);
+
+  // Screen Navigation Helpers
+  const navigateToMenu = () => setCurrentScreen('menu');
+  const navigateToDetails = (id) => {
+    setSelectedItemId(id);
+    setCurrentScreen('details');
+  };
+  const navigateToCart = () => setCurrentScreen('cart');
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans pb-20 md:pb-6 selection:bg-amber-100 selection:text-amber-800">
+      {/* Header */}
+      <Header navigateToMenu={navigateToMenu} navigateToCart={navigateToCart} setShowDocsModal={setShowDocsModal} />
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-4 md:py-6">
+        {loading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <ErrorMessage message={error} onRetry={() => window.location.reload()} />
+        ) : (
+          <>
+            {currentScreen === 'menu' && <MenuView menuItems={menuItems} navigateToDetails={navigateToDetails} />}
+            {currentScreen === 'details' && (
+              <ItemDetailsView
+                itemId={selectedItemId}
+                menuItems={menuItems}
+                navigateToMenu={navigateToMenu}
+                navigateToCart={navigateToCart}
+              />
+            )}
+            {currentScreen === 'cart' && <CartView navigateToMenu={navigateToMenu} />}
+          </>
+        )}
+      </main>
+
+      {/* Mobile Navigation Dock */}
+      <MobileNavDock currentScreen={currentScreen} navigateToMenu={navigateToMenu} navigateToCart={navigateToCart} />
+
+      {/* Submission Deliverables & Github Guide Modal */}
+      {showDocsModal && <DocsModal onClose={() => setShowDocsModal(false)} />}
+    </div>
+  );
+}
+
+// ==========================================
+// HEADER COMPONENT
+// ==========================================
+function Header({ navigateToMenu, navigateToCart, setShowDocsModal }) {
+  const { totalItemsCount } = useCart();
+
+  return (
+    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+      <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Brand Logo & Name */}
+        <div 
+          onClick={navigateToMenu} 
+          className="flex items-center gap-2.5 cursor-pointer group select-none"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
+            <Utensils className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg leading-tight text-slate-900 group-hover:text-amber-600 transition-colors">
+              Campus Canteen
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">Quick Order & Pickup</p>
+          </div>
+        </div>
+
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Developer Submission Guide Trigger */}
+          <button
+            onClick={() => setShowDocsModal(true)}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            title="View Submission Details & Project Folder Code"
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-600" />
+            <span>Submission Info</span>
+          </button>
+
+          {/* Cart Icon Button with Dynamic Badge */}
+          <button
+            onClick={navigateToCart}
+            className="relative p-2.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all border border-amber-200/60 active:scale-95 flex items-center gap-2"
+            aria-label="View Shopping Cart"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span className="hidden md:inline text-xs font-bold">Cart</span>
+            {totalItemsCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-amber-500 text-white text-[11px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce-short">
+                {totalItemsCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ==========================================
+// 1. MENU VIEW SCREEN
+// ==========================================
+function MenuView({ menuItems, navigateToDetails }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [dietaryFilter, setDietaryFilter] = useState('All');
+
+  const { favorites } = useFavorites();
+
+  const categories = ['All', 'Breakfast', 'Main Meals', 'Snacks & Street Food', 'Beverages', 'Desserts'];
+
+  // Filter Logic
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      // Category check
+      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+      
+      // Search term check
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Favorites filter
+      const matchesFavorites = !favoritesOnly || favorites.includes(item.id);
+
+      // Dietary filter
+      const matchesDietary = dietaryFilter === 'All' || item.dietary === dietaryFilter;
+
+      return matchesCategory && matchesSearch && matchesFavorites && matchesDietary;
+    });
+  }, [menuItems, selectedCategory, searchTerm, favoritesOnly, dietaryFilter, favorites]);
+
+  return (
+    <div className="space-y-5 animate-fade-in">
+      {/* Search Bar & Primary Controls */}
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search menu items, ingredients..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Toggle Pills (Favorites & Dietary Types) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 text-xs">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setFavoritesOnly(!favoritesOnly)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold transition-all ${
+                favoritesOnly
+                  ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-sm'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${favoritesOnly ? 'fill-rose-500 text-rose-500' : ''}`} />
+              <span>Favorites Only</span>
+              {favorites.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-rose-200/60 text-rose-700 rounded-full text-[10px]">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <span className="text-slate-400 text-[11px] font-medium hidden sm:inline">Dietary:</span>
+            {['All', 'Veg', 'Non-Veg', 'Vegan'].map((diet) => (
+              <button
+                key={diet}
+                onClick={() => setDietaryFilter(diet)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  dietaryFilter === diet
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {diet}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Category Horizontal Scroll Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+        {categories.map((cat) => {
+          const isActive = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20 scale-105'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
+              }`}
+            >
+              {cat === 'All' && <Utensils className="w-3.5 h-3.5" />}
+              {cat === 'Breakfast' && <Coffee className="w-3.5 h-3.5" />}
+              {cat === 'Main Meals' && <Pizza className="w-3.5 h-3.5" />}
+              {cat === 'Desserts' && <IceCream className="w-3.5 h-3.5" />}
+              <span>{cat}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Filter Indicators Bar */}
+      {(selectedCategory !== 'All' || searchTerm || favoritesOnly || dietaryFilter !== 'All') && (
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <span>
+            Showing <strong className="text-slate-800">{filteredItems.length}</strong> items
+          </span>
+          <button
+            onClick={() => {
+              setSelectedCategory('All');
+              setSearchTerm('');
+              setFavoritesOnly(false);
+              setDietaryFilter('All');
+            }}
+            className="text-amber-600 hover:text-amber-700 font-semibold underline underline-offset-2"
+          >
+            Reset Filters
+          </button>
+        </div>
+      )}
+
+      {/* Items Grid */}
+      {filteredItems.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map((item) => (
+            <ItemCard key={item.id} item={item} navigateToDetails={navigateToDetails} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300 p-6 space-y-3">
+          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 mx-auto flex items-center justify-center">
+            <Search className="w-6 h-6" />
+          </div>
+          <h3 className="font-bold text-slate-800 text-base">No Menu Items Found</h3>
+          <p className="text-xs text-slate-500 max-w-xs mx-auto">
+            We couldn't find anything matching your filters. Try clearing your search or switching categories.
+          </p>
+          <button
+            onClick={() => {
+              setSelectedCategory('All');
+              setSearchTerm('');
+              setFavoritesOnly(false);
+              setDietaryFilter('All');
+            }}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// ITEM CARD COMPONENT
+// ==========================================
+function ItemCard({ item, navigateToDetails }) {
+  const { favorites, toggleFavorite } = useFavorites();
+  const { addToCart } = useCart();
+  const [addedToast, setAddedToast] = useState(false);
+
+  const isFavorite = favorites.includes(item.id);
+
+  const handleQuickAdd = (e) => {
+    e.stopPropagation();
+    addToCart(item, 1);
+    setAddedToast(true);
+    setTimeout(() => setAddedToast(false), 1200);
+  };
+
+  return (
+    <div
+      onClick={() => navigateToDetails(item.id)}
+      className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col group relative"
+    >
+      {/* Top Image Container */}
+      <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
+
+        {/* Favorite Heart Floating Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(item.id);
+          }}
+          className="absolute top-2.5 right-2.5 p-2 rounded-full bg-white/90 backdrop-blur-md shadow-sm hover:bg-white text-slate-600 transition-all hover:scale-110 active:scale-90"
+          aria-label="Save to favorites"
+        >
+          <Heart
+            className={`w-4 h-4 transition-colors ${
+              isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-600 hover:text-rose-500'
+            }`}
+          />
+        </button>
+
+        {/* Dietary Badge */}
+        <span
+          className={`absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-sm ${
+            item.dietary === 'Veg'
+              ? 'bg-emerald-500/90 text-white'
+              : item.dietary === 'Vegan'
+              ? 'bg-teal-600/90 text-white'
+              : 'bg-rose-500/90 text-white'
+          }`}
+        >
+          {item.dietary}
+        </span>
+
+        {item.popular && (
+          <span className="absolute bottom-2.5 left-2.5 bg-amber-500 text-white px-2 py-0.5 rounded-md text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
+            <Sparkles className="w-3 h-3 fill-white" /> Popular
+          </span>
+        )}
+      </div>
+
+      {/* Card Details */}
+      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-slate-900 text-sm leading-snug group-hover:text-amber-600 transition-colors line-clamp-1">
+              {item.name}
+            </h3>
+            <span className="font-extrabold text-amber-600 text-base">
+              ${item.price.toFixed(2)}
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+            {item.description}
+          </p>
+        </div>
+
+        {/* Meta Info & Quick Action */}
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-slate-400" />
+              {item.prepTime}
+            </span>
+            <span className="flex items-center gap-1">
+              <Flame className="w-3 h-3 text-orange-400" />
+              {item.calories} kcal
+            </span>
+          </div>
+
+          <button
+            onClick={handleQuickAdd}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
+              addedToast
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'bg-slate-900 hover:bg-amber-600 text-white shadow-sm'
+            }`}
+          >
+            {addedToast ? (
+              <>
+                <CheckCircle className="w-3.5 h-3.5" /> Added
+              </>
+            ) : (
+              <>
+                <Plus className="w-3.5 h-3.5" /> Quick Add
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 2. ITEM DETAILS VIEW SCREEN
+// ==========================================
+function ItemDetailsView({ itemId, menuItems, navigateToMenu, navigateToCart }) {
+  const item = menuItems.find((i) => i.id === itemId) || menuItems[0];
+  const { favorites, toggleFavorite } = useFavorites();
+  const { addToCart } = useCart();
+
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSpice, setSelectedSpice] = useState('Medium');
+  const [selectedAddOns, setSelectedAddOns] = useState([]);
+  const [notes, setNotes] = useState('');
+  const [showAddedBanner, setShowAddedBanner] = useState(false);
+
+  const isFavorite = item ? favorites.includes(item.id) : false;
+
+  if (!item) return null;
+
+  // Extra cost calculation
+  const extraCost = selectedAddOns.reduce((acc, addonName) => {
+    const addonObj = CUSTOMIZATION_OPTIONS.addOns.find((a) => a.name === addonName);
+    return acc + (addonObj ? addonObj.price : 0);
+  }, 0);
+
+  const unitTotal = item.price + extraCost;
+  const grandTotal = unitTotal * quantity;
+
+  const toggleAddOn = (addonName) => {
+    setSelectedAddOns((prev) =>
+      prev.includes(addonName) ? prev.filter((a) => a !== addonName) : [...prev, addonName]
+    );
+  };
+
+  const handleAddToCart = () => {
+    addToCart(item, quantity, {
+      spiceChoice: selectedSpice,
+      selectedAddOns,
+      notes,
+      extraCost
+    });
+
+    setShowAddedBanner(true);
+    setTimeout(() => setShowAddedBanner(false), 2000);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-4 animate-fade-in pb-12">
+      {/* Back button */}
+      <button
+        onClick={navigateToMenu}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-amber-600 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Menu
+      </button>
+
+      {/* Toast Notification */}
+      {showAddedBanner && (
+        <div className="bg-emerald-600 text-white p-3 rounded-xl shadow-lg flex items-center justify-between text-xs font-bold animate-slide-down">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-200" />
+            <span>Added {quantity} item(s) to your cart!</span>
+          </div>
+          <button onClick={navigateToCart} className="underline text-emerald-100 hover:text-white">
+            View Cart
+          </button>
+        </div>
+      )}
+
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        {/* Banner Image Header */}
+        <div className="relative h-64 w-full bg-slate-100">
+          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <button
+            onClick={() => toggleFavorite(item.id)}
+            className="absolute top-4 right-4 p-3 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white transition-all active:scale-90"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-600'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="p-5 md:p-6 space-y-6">
+          {/* Main Title & Price */}
+          <div>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                  {item.category}
+                </span>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mt-0.5">
+                  {item.name}
+                </h2>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-extrabold text-amber-600">
+                  ${unitTotal.toFixed(2)}
+                </div>
+                {extraCost > 0 && (
+                  <span className="text-[10px] text-slate-400">Includes extras</span>
+                )}
+              </div>
+            </div>
+
+            <p className="text-slate-600 text-xs md:text-sm mt-3 leading-relaxed">
+              {item.description}
+            </p>
+          </div>
+
+          {/* Key Attributes Badges */}
+          <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-center">
+            <div className="p-2 bg-slate-50 rounded-xl">
+              <span className="block text-[10px] text-slate-400 font-medium uppercase">Type</span>
+              <span className="text-xs font-bold text-slate-700">{item.dietary}</span>
+            </div>
+            <div className="p-2 bg-slate-50 rounded-xl">
+              <span className="block text-[10px] text-slate-400 font-medium uppercase">Prep Time</span>
+              <span className="text-xs font-bold text-slate-700">{item.prepTime}</span>
+            </div>
+            <div className="p-2 bg-slate-50 rounded-xl">
+              <span className="block text-[10px] text-slate-400 font-medium uppercase">Energy</span>
+              <span className="text-xs font-bold text-slate-700">{item.calories} kcal</span>
+            </div>
+          </div>
+
+          {/* Ingredients list */}
+          <div>
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+              Ingredients
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {item.ingredients.map((ing) => (
+                <span
+                  key={ing}
+                  className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg"
+                >
+                  {ing}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Customization 1: Spice Level */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Spice Level
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {CUSTOMIZATION_OPTIONS.spiceLevels.map((spice) => (
+                <button
+                  key={spice}
+                  onClick={() => setSelectedSpice(spice)}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
+                    selectedSpice === spice
+                      ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {spice}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Customization 2: Add-Ons */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Extra Toppings & Add-ons
+            </label>
+            <div className="space-y-2">
+              {CUSTOMIZATION_OPTIONS.addOns.map((addon) => {
+                const isSelected = selectedAddOns.includes(addon.name);
+                return (
+                  <div
+                    key={addon.name}
+                    onClick={() => toggleAddOn(addon.name)}
+                    className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-amber-500 bg-amber-50/60'
+                        : 'border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="rounded text-amber-500 focus:ring-amber-500 w-4 h-4"
+                      />
+                      <span className="text-xs font-semibold text-slate-700">{addon.name}</span>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">
+                      +${addon.price.toFixed(2)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Special Instructions Note */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Special Instructions
+            </label>
+            <textarea
+              placeholder="e.g. No mayo, extra napkins, dress on the side..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-amber-500/50 focus:outline-none"
+              rows={2}
+            />
+          </div>
+
+          {/* Quantity Controls & Add Button */}
+          <div className="pt-4 border-t border-slate-100 flex items-center gap-4">
+            {/* Quantity Stepper */}
+            <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-200 active:scale-95 transition-all"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-10 text-center text-sm font-extrabold text-slate-800">
+                {quantity}
+              </span>
+              <button
+                onClick={() => setQuantity((q) => q + 1)}
+                className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-200 active:scale-95 transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Main Action Button */}
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 px-4 rounded-xl font-bold text-xs md:text-sm shadow-md shadow-orange-500/20 active:scale-[0.99] transition-all flex items-center justify-between"
+            >
+              <span>Add To Cart</span>
+              <span className="bg-white/20 px-2.5 py-0.5 rounded-lg text-xs font-extrabold">
+                ${grandTotal.toFixed(2)}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 3. CART VIEW SCREEN
+// ==========================================
+function CartView({ navigateToMenu }) {
+  const { cart, updateQuantity, removeFromCart, clearCart, subtotal } = useCart();
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [promoError, setPromoError] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [isOrdering, setIsOrdering] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+
+  const tax = subtotal * 0.08; // 8% campus tax
+  const grandTotal = Math.max(0, subtotal + tax - discount);
+
+  const handleApplyPromo = (e) => {
+    e.preventDefault();
+    setPromoError('');
+    if (promoCode.trim().toUpperCase() === 'STUDENT10') {
+      const discAmount = subtotal * 0.1; // 10% off
+      setDiscount(discAmount);
+      setPromoApplied(true);
+    } else if (promoCode.trim().toUpperCase() === 'CAMPUS5') {
+      setDiscount(5.0);
+      setPromoApplied(true);
+    } else {
+      setPromoError('Invalid code. Try "STUDENT10" or "CAMPUS5".');
+    }
+  };
+
+  const handlePlaceOrder = () => {
+    setIsOrdering(true);
+    setTimeout(() => {
+      setIsOrdering(false);
+      setOrderSuccess(true);
+      clearCart();
+    }, 1200);
+  };
+
+  if (orderSuccess) {
+    return (
+      <div className="max-w-md mx-auto text-center py-12 px-4 space-y-4 animate-fade-in">
+        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-inner">
+          <CheckCircle className="w-10 h-10" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900">Order Received!</h2>
+        <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+          Your order <strong className="text-slate-700">#ORD-8492</strong> has been sent directly to the canteen kitchen. Pick up at Counter 3 in approx 15 minutes.
+        </p>
+
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 text-left text-xs space-y-2">
+          <div className="flex justify-between font-bold text-slate-700 border-b pb-2">
+            <span>Estimated Pickup Time</span>
+            <span className="text-amber-600">12:45 PM Today</span>
+          </div>
+          <p className="text-slate-400 text-[11px]">
+            Please present your digital order ticket or Student ID at pickup.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            setOrderSuccess(false);
+            navigateToMenu();
+          }}
+          className="w-full bg-slate-900 hover:bg-amber-600 text-white font-bold py-3 rounded-xl text-xs transition-colors shadow-md"
+        >
+          Back To Menu
+        </button>
+      </div>
+    );
+  }
+
+  if (cart.length === 0) {
+    return (
+      <div className="max-w-md mx-auto text-center py-16 px-4 space-y-4 animate-fade-in">
+        <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-3xl mx-auto flex items-center justify-center">
+          <ShoppingBag className="w-10 h-10" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Your Cart is Empty</h2>
+        <p className="text-xs text-slate-500 max-w-xs mx-auto">
+          Looks like you haven't added any canteen items to your order yet.
+        </p>
+        <button
+          onClick={navigateToMenu}
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold px-6 py-3 rounded-xl text-xs shadow-md hover:from-amber-600 hover:to-orange-600 transition-all"
+        >
+          Browse Canteen Menu
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-5 animate-fade-in pb-12">
+      {/* Header section */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={navigateToMenu}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-amber-600 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200"
+        >
+          <ArrowLeft className="w-4 h-4" /> Continue Ordering
+        </button>
+
+        <button
+          onClick={clearCart}
+          className="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1"
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Clear Cart
+        </button>
+      </div>
+
+      {/* Cart Items List */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
+        <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-bold text-slate-800 text-sm">Your Selected Items</h3>
+          <span className="text-xs text-slate-500 font-medium">{cart.length} unique items</span>
+        </div>
+
+        {cart.map((item) => (
+          <div key={item.cartItemId} className="p-4 flex gap-3 sm:gap-4 items-start">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-16 h-16 rounded-xl object-cover bg-slate-100 shrink-0"
+            />
+
+            <div className="flex-1 space-y-1">
+              <div className="flex justify-between items-start">
+                <h4 className="font-bold text-slate-900 text-sm leading-tight">{item.name}</h4>
+                <span className="font-extrabold text-slate-900 text-xs">
+                  ${(item.unitPrice * item.quantity).toFixed(2)}
+                </span>
+              </div>
+
+              {/* Options badge details */}
+              <div className="flex flex-wrap gap-1 text-[10px] text-slate-500">
+                <span className="bg-slate-100 px-1.5 py-0.5 rounded">Spice: {item.spiceChoice}</span>
+                {item.selectedAddOns?.map((addon) => (
+                  <span key={addon} className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200/50">
+                    +{addon}
+                  </span>
+                ))}
+              </div>
+
+              {item.notes && (
+                <p className="text-[10px] text-slate-400 italic">Note: "{item.notes}"</p>
+              )}
+
+              {/* Quantity Stepper & Delete */}
+              <div className="pt-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
+                    <button
+                      onClick={() => updateQuantity(item.cartItemId, -1)}
+                      className="w-6 h-6 rounded bg-white shadow-xs flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="w-6 text-center text-xs font-bold text-slate-800">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => updateQuantity(item.cartItemId, 1)}
+                      className="w-6 h-6 rounded bg-white shadow-xs flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => removeFromCart(item.cartItemId)}
+                  className="text-slate-400 hover:text-rose-500 transition-colors p-1"
+                  title="Remove item"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Promo Code Coupon Card */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <label className="text-xs font-bold text-slate-700 block">Promo or Discount Code</label>
+        <form onSubmit={handleApplyPromo} className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Try STUDENT10 or CAMPUS5"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            disabled={promoApplied}
+            className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+          />
+          <button
+            type="submit"
+            disabled={promoApplied || !promoCode.trim()}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white text-xs font-bold rounded-xl transition-colors"
+          >
+            {promoApplied ? 'Applied' : 'Apply'}
+          </button>
+        </form>
+        {promoError && <p className="text-[11px] text-rose-500 font-medium">{promoError}</p>}
+        {promoApplied && (
+          <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+            <CheckCircle className="w-3 h-3" /> Discount applied successfully!
+          </p>
+        )}
+      </div>
+
+      {/* Payment & Order Summary Card */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 className="font-bold text-slate-900 text-sm border-b pb-2">Order Breakdown</h3>
+
+        <div className="space-y-2 text-xs text-slate-600">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span className="font-semibold text-slate-800">${subtotal.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Estimated Campus Tax (8%)</span>
+            <span className="font-semibold text-slate-800">${tax.toFixed(2)}</span>
+          </div>
+
+          {discount > 0 && (
+            <div className="flex justify-between text-emerald-600 font-semibold">
+              <span>Discount</span>
+              <span>-${discount.toFixed(2)}</span>
+            </div>
+          )}
+
+          <div className="pt-2 border-t flex justify-between items-center text-sm">
+            <span className="font-extrabold text-slate-900">Total Amount</span>
+            <span className="font-black text-amber-600 text-lg">${grandTotal.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Pickup Counter Selection */}
+        <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-amber-800">
+            <Info className="w-4 h-4 text-amber-600" />
+            <span>Campus Pickup Info</span>
+          </div>
+          <p className="text-amber-900/80 text-[11px] leading-relaxed">
+            Standard prep time is approx 10-15 mins. You will receive an SMS ticket upon placing order.
+          </p>
+        </div>
+
+        {/* Place Order Button */}
+        <button
+          onClick={handlePlaceOrder}
+          disabled={isOrdering}
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold py-3.5 rounded-xl text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {isOrdering ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Transmitting Order...</span>
+            </>
+          ) : (
+            <>
+              <span>Confirm & Place Order (${grandTotal.toFixed(2)})</span>
+              <ChevronRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// MOBILE BOTTOM NAVIGATION DOCK
+// ==========================================
+function MobileNavDock({ currentScreen, navigateToMenu, navigateToCart }) {
+  const { totalItemsCount } = useCart();
+  const { favorites } = useFavorites();
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 z-40 flex items-center justify-around shadow-lg">
+      <button
+        onClick={navigateToMenu}
+        className={`flex flex-col items-center gap-0.5 text-[10px] font-bold transition-colors ${
+          currentScreen === 'menu' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'
+        }`}
+      >
+        <Utensils className="w-5 h-5" />
+        <span>Menu</span>
+      </button>
+
+      <button
+        onClick={navigateToCart}
+        className={`relative flex flex-col items-center gap-0.5 text-[10px] font-bold transition-colors ${
+          currentScreen === 'cart' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'
+        }`}
+      >
+        <ShoppingBag className="w-5 h-5" />
+        <span>Cart</span>
+        {totalItemsCount > 0 && (
+          <span className="absolute -top-1 -right-2 bg-amber-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+            {totalItemsCount}
+          </span>
+        )}
+      </button>
+    </nav>
+  );
+}
+
+// ==========================================
+// LOADING & ERROR STATES
+// ==========================================
+function LoadingSpinner() {
+  return (
+    <div className="py-20 text-center space-y-3">
+      <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+      <p className="text-xs font-semibold text-slate-500">Fetching Today's Campus Menu...</p>
+    </div>
+  );
+}
+
+function ErrorMessage({ message, onRetry }) {
+  return (
+    <div className="py-16 text-center max-w-sm mx-auto space-y-3 bg-white p-6 rounded-2xl border border-rose-200">
+      <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+      <h3 className="font-bold text-slate-800">Error Loading Menu</h3>
+      <p className="text-xs text-slate-500">{message}</p>
+      <button
+        onClick={onRetry}
+        className="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-900 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  );
+}
+
+// ==========================================
+// SUBMISSION & PROJECT STRUCTURE MODAL
+// ==========================================
+function DocsModal({ onClose }) {
+  const [activeTab, setActiveTab] = useState('structure');
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+        {/* Modal Header */}
+        <div className="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-amber-400" />
+            <div>
+              <h3 className="font-bold text-base">Project Submission & Setup Deliverables</h3>
+              <p className="text-xs text-slate-400">Standard React Project Architecture & JSON Integration</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-white rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200 bg-slate-50 px-4 text-xs font-bold">
+          <button
+            onClick={() => setActiveTab('structure')}
+            className={`py-3 px-4 border-b-2 transition-colors ${
+              activeTab === 'structure'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            Project Folder Layout
+          </button>
+          <button
+            onClick={() => setActiveTab('json')}
+            className={`py-3 px-4 border-b-2 transition-colors ${
+              activeTab === 'json'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            public/menu.json
+          </button>
+          <button
+            onClick={() => setActiveTab('github')}
+            className={`py-3 px-4 border-b-2 transition-colors ${
+              activeTab === 'github'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            GitHub & Recording Guide
+          </button>
+        </div>
+
+        {/* Modal Body Content */}
+        <div className="p-5 overflow-y-auto flex-1 text-xs text-slate-600 space-y-4">
+          {activeTab === 'structure' && (
+            <div className="space-y-3">
+              <p className="leading-relaxed">
+                When converting this single-file application into a standard multi-file Vite/React production repository, arrange files following this folder architecture:
+              </p>
+              <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl font-mono text-[11px] overflow-x-auto">
+{`campus-canteen-app/
+├── public/
+│   └── menu.json              # Local JSON file with canteen menu items
+├── src/
+│   ├── context/
+│   │   ├── CartContext.jsx     # Shared cart state & totals
+│   │   └── FavoritesContext.jsx# Favorite toggle state
+│   ├── components/
+│   │   ├── Header.jsx          # Header with real-time cart badge
+│   │   ├── ItemCard.jsx        # Menu item card component
+│   │   └── MobileNav.jsx       # Responsive mobile bottom bar
+│   ├── screens/
+│   │   ├── MenuView.jsx        # Search, filters, grid
+│   │   ├── ItemDetailsView.jsx # Options, spice & add-ons
+│   │   └── CartView.jsx        # Checkout summary & quantity controls
+│   ├── App.jsx                 # Routing & async fetch logic
+│   └── main.jsx
+├── package.json
+└── README.md`}
+              </pre>
+            </div>
+          )}
+
+          {activeTab === 'json' && (
+            <div className="space-y-3">
+              <p>
+                Place your menu data inside <code className="bg-slate-100 text-amber-700 px-1 py-0.5 rounded font-mono">public/menu.json</code>. Your React <code className="bg-slate-100 text-amber-700 px-1 py-0.5 rounded font-mono">useEffect</code> can fetch it directly using:
+              </p>
+              <pre className="bg-slate-900 text-amber-300 p-3 rounded-xl font-mono text-[11px] overflow-x-auto">
+{`useEffect(() => {
+  async function loadMenu() {
+    try {
+      const res = await fetch('/menu.json');
+      const data = await res.json();
+      setMenuItems(data);
+    } catch (err) {
+      setError('Failed to fetch menu.json');
+    }
+  }
+  loadMenu();
+}, []);`}
+              </pre>
+            </div>
+          )}
+
+          {activeTab === 'github' && (
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-800 text-sm">Submission Checklist:</h4>
+              <ul className="list-disc pl-5 space-y-1.5 leading-relaxed">
+                <li>
+                  <strong>GitHub Repository:</strong> Push your code to GitHub with a clean commit history.
+                </li>
+                <li>
+                  <strong>Screen Recording Demo:</strong> Record a short 30-60 second video demonstrating:
+                  <ol className="list-decimal pl-5 mt-1 text-slate-500">
+                    <li>Searching and filtering by category or dietary tag</li>
+                    <li>Toggling an item as a favorite</li>
+                    <li>Opening an item details page to customize spice/add-ons</li>
+                    <li>Adding items and watching header badge increment dynamically</li>
+                    <li>Reviewing cart breakdown and order placement</li>
+                  </ol>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
